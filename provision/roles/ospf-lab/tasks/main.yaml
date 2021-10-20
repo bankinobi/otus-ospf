@@ -1,0 +1,47 @@
+---
+- name: Install packages
+  yum:
+    name: "{{ packages }}"
+    state: present
+
+- name: Set sysctl params
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_file: /etc/sysctl.conf
+    ignoreerrors: yes
+    reload: yes
+  with_dict: "{{ sysctl_params }}"
+
+- name: Disable default route for eth0
+  lineinfile:
+    path: /etc/sysconfig/network-scripts/ifcfg-eth0
+    line: DEFROUTE=no
+  notify: reboot host
+
+# if selinux enabled, vtysh cant write config. So enabling zebra config write
+- name: Set setsebool zebra_write_config
+  seboolean:
+    name: zebra_write_config
+    state: yes
+    persistent: yes
+
+- name: Copy Quagga daemons file
+  copy:
+    src: files/daemons
+    dest: /etc/daemons
+
+- name: Template Quagga config files
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "/etc/quagga/{{ item.name }}"
+    owner: quagga
+    group: "{{ item.group }}"
+    mode: "0640"
+  with_items:
+    - { name: ospfd.conf, group: quaggavt }
+    - { name: zebra.conf, group: quagga }
+  notify:
+    - restart zebra
+    - restart ospfd

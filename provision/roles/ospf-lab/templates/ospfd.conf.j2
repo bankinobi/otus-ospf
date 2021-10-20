@@ -1,0 +1,26 @@
+!!!!!!!!!!!!!!!!!
+!{{ ansible_managed }}!
+!!!!!!!!!!!!!!!!!
+
+hostname {{ inventory_hostname }}
+log file /var/log/quagga/ospfd.log
+
+interface eth1
+ip ospf mtu-ignore
+ip ospf hello-interval 5
+ip ospf dead-interval 10
+
+interface eth2
+ip ospf mtu-ignore
+ip ospf hello-interval 5
+ip ospf dead-interval 10
+
+router ospf
+  ospf router-id {{ routerId }}
+  network {{ ansible_eth1.ipv4.network }}/30 area 0
+  network {{ ansible_eth2.ipv4.network }}/30 area 0
+{% for neighbor in neighbors %}
+  neighbor {{ neighbor }}
+{% endfor %}
+
+default-information originate always

@@ -1,0 +1,16 @@
+---
+- name: reboot host
+  reboot:
+    reboot_timeout: 3600
+
+- name: restart zebra
+  service:
+   name: zebra
+   state: restarted
+   enabled: true
+
+- name: restart ospfd
+  service:
+   name: ospfd
+   state: restarted
+   enabled: true

@@ -1,0 +1,19 @@
+!!!!!!!!!!!!!!!!!
+!{{ ansible_managed }}!
+!!!!!!!!!!!!!!!!!
+
+hostname {{ inventory_hostname }}
+log file /var/log/quagga/zebra.log
+
+interface eth1
+  ip address {{ ansible_eth1.ipv4.address }}/30
+  ip forwarding
+
+interface eth2
+  ip address {{ ansible_eth2.ipv4.address }}/30
+  ip forwarding
+
+interface lo
+ ip address 127.0.0.1/8
+
+router-id {{ routerId }}
